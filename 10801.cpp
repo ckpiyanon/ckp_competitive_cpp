@@ -1,77 +1,73 @@
 #include <bits/stdc++.h>
+
 using namespace std;
 
 typedef pair<int,int> ii;
+typedef pair<ii,int> iii;
 typedef vector<ii> vii;
+typedef vector<vii> vv;
 
-bitset<100> visited;
-vector<vii> graph(100);
-char str[1001];
+bitset<101> visited;
+int n;
 
-bool has_path(int u,int v)
+int dijkstra(vector<vv> &graph,int s,int t)
 {
-	if(u == v)	return true;
-	visited[u] = true;
-	for(vii::iterator it = graph[u].begin();it < graph[u].end();it++)
-	{
-		if(!visited[it->second] && has_path(it->second,v))	return true;
-	}
-	return false;
-}
-int dijkstra(int u,int v)
-{
-	int w;
-	priority_queue<ii,vector<ii>,greater<ii> > pq;
-	ii e;
+	priority_queue<iii,vector<iii>,greater<iii> > pq;
+	int u,v,w;
+	iii e;
 	visited.reset();
-	pq.push(ii(0,u));
+	for(int i = 0;i < n;i++)
+		for(vii::iterator it = graph[i][0].begin();it != graph[i][0].end();it++)
+			pq.push(make_pair(make_pair(it->first,it->second),i));
+	visited.set(0);
 	while(!pq.empty())
 	{
 		e = pq.top();	pq.pop();
-		if(visited[e.second])	continue;
-		u = e.second;
-		w = e.first;
-		if(u == v)	return w;
-		visited[u] = true;
-		for(vii::iterator it = graph[u].begin();it < graph[u].end();it++)
-		{
-			if(visited[it->second])	continue;
-			pq.push(ii(w + it->first,it->second));
-		}
+		u = e.first.second;
+		if(visited[u])	continue;
+		visited.set(u);
+		if(u == t)	return e.first.first;
+		for(int i = 0;i < n;i++)
+			for(vii::iterator it = graph[i][u].begin();it != graph[i][u].end();it++)
+				if(!visited[it->second])
+				{
+					w = it->first + e.first.first;
+					if(e.second != i)	w += 60;
+					pq.push(make_pair(make_pair(w,it->second),i));
+				}
 	}
+	return -1;
 }
 
 int main()
 {
 	freopen("in.txt","r",stdin);
-	char *tok;
-	int t[100],n,k,u,v;
-	while(gets(str))
+	vector<vv> graph(5);
+	int t[5],k,u,v,w;
+	char s[500],*tok;
+	while(gets(s))
 	{
-		graph.assign(graph.size(),vii());
-		n = atoi(strtok(str," "));
+		n = atoi(strtok(s," "));
 		k = atoi(strtok(NULL," "));
-		gets(str);
-		t[0] = atoi(strtok(str," "));
-		for(int i = 1;i < n;i++)
-			t[i] = atoi(strtok(NULL," "));
+		graph.assign(graph.size(),vv(101));
+		gets(s);
+		t[0] = atoi(strtok(s," "));
+		for(int i = 1;i < n;i++)	t[i] = atoi(strtok(NULL," "));
 		for(int i = 0;i < n;i++)
 		{
-			gets(str);
-			tok = strtok(str," ");
-			u = atoi(tok);
+			graph[i].assign(graph[i].size(),vii());
+			gets(s);
+			u = atoi(strtok(s," "));
 			while(tok = strtok(NULL," "))
 			{
 				v = atoi(tok);
-				graph[u].push_back(ii(t[i],v));
-				graph[v].push_back(ii(t[i],u));
-				u = v;
+				graph[i][u].push_back(make_pair(t[i] * abs(v-u),v));
+				graph[i][v].push_back(make_pair(t[i] * abs(v-u),u));
 			}
 		}
-		visited.reset();
-		if(!has_path(0,k))	printf("IMPOSSIBLE\n");
-		else				printf("%d\n",dijkstra(0,k));
+		w = dijkstra(graph,0,k);
+		if(w == -1)	puts("IMPOSSIBLE");
+		else	printf("%d\n",w);
 	}
-
 	return 0;
 }
