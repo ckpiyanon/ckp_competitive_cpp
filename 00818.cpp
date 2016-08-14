@@ -1,77 +1,59 @@
-#include <cstdio>
-#include <cstring>
+#include <bits/stdc++.h>
+using namespace std;
 
-int n;
-int g[15][15],v[15];
-int prev(int n)
+int n,mask_open,mask_visit;
+int graph[15];
+
+int count_ones(int bits)
 {
-	int i = 0;
-	while(!g[i][n] && i < 15)	i++;
-	return i;
+    int num = 0;
+    while(bits > 0) num += (bits & 1),bits = bits >> 1;
+    return num;
 }
-int next(int x)
+bool is_one(int bits,int u) {return bits & (1 << u);}
+bool is_zero(int bits,int u) {return !is_one(bits,u);}
+bool is_ring(int u,int v)
 {
-	int i = 0;
-	while(!g[x][i] && i < n)	i++;
-	return i;
+    if(is_one(mask_visit,v))   return true;
+    mask_visit |= (1 << v);
+    for(int i = 0;i < n;i++)
+        if(is_zero(mask_open,i) && is_one(graph[v],i) && i != u && is_ring(v,i))    return true;
+    return false;
 }
-bool cycle(int k)
-{
-	int x = next(k);
-	while(x != k && x != n)	x = next(x);
-	if(x == k)	return true;
-	return false;
-}
-int src(int n)
-{
-	int x = prev(n);
-	while(x != 15)	n = x,x = prev(n);
-	return n;
-}
-void clrc(int x)
-{
-	while(!v[x])
-	{
-		v[x] = true;
-		x = next(x);
-	}
-}
-void clr(int x)
-{
-	v[x] = true;
-	for(int i = 0;i < n;i++)
-		if(g[x][i])	clr(i);
-}
+
 int main()
 {
-	freopen("in.txt","r",stdin);
-	int a,b,cy,ch;
-	scanf("%d",&n);
-	while(n)
-	{
-		memset(g,0,sizeof(g));
-		memset(v,0,sizeof(v));
-		while(true)
-		{
-			scanf("%d %d",&a,&b);
-			if(a == -1 && b == -1)	break;
-			g[a-1][b-1] = true;
-		}
-		a = cy = ch = 0;
-		for(int i = 0;i < n;i++)
-		{
-			if(!v[i])
-			{
-				ch++;
-				if(cycle(i))	cy++,clrc(i);
-				else			clr(src(i));
-			}
-		}
-		if(cy == ch)	ch--;
-		printf("** %d %d\n",cy,ch);
-		printf("%d\n",cy + ch - 1);
-		scanf("%d",&n);
-	}
+    int u,v,TC = 0,ans,num_open,num_strands;
+    bool ok;
+    while(scanf("%d",&n) != -1 && n)
+    {
+        memset(graph,0,sizeof(graph));
+        ans = n;
+        while(scanf("%d %d",&u,&v) != -1 && u != -1 && v != -1)
+            u--,v--,graph[u] |= (1 << v),graph[v] |= (1 << u);
+        for(mask_open = 0;mask_open < (1 << n);mask_open++)
+        {
+            num_open = count_ones(mask_open);
+            num_strands = 0;
+            mask_visit = 0;
+            ok = true;
+            for(int i = 0;i < n && ok;i++) if(is_zero(mask_open,i))
+            {
+                int deg = 0;
+                for(int j = 0;j < n;j++) if(is_zero(mask_open,j) && is_one(graph[i],j))
+                    deg++;
+                ok = deg <= 2;
+            }
+            if(!ok) continue;
+            for(int i = 0;i < n && ok;i++) if(is_zero(mask_open,i) && is_zero(mask_visit,i))
+            {
+                num_strands++;
+                ok = !is_ring(-1,i);
+            }
+            if(ok && num_strands - 1 <= num_open)   ans = min(ans,num_open);
+        }
+        printf("Set %d: Minimum links to open is %d\n",++TC,ans);
+    }
 
-	return 0;
+    return 0;
 }
