@@ -19,7 +19,7 @@ void dfs(int u)
 }
 int main()
 {
-//	freopen("in.txt","r",stdin);
+	freopen("in.txt","r",stdin);
 	int u,v;
 	while(~scanf("%d %d",&n,&m) && n && m)
 	{

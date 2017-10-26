@@ -1,13 +1,21 @@
 #include <bits/stdc++.h>
-
+#define SIZE 8
 using namespace std;
-
 int main()
 {
-	int arr[] = {1,1,1,2,2};
-	int i = 1;
-	while(next_permutation(arr,arr + 5))	i++;
-	printf("%d\n",i);
+	bool arr[SIZE];
+	for(int i = 0;i < SIZE;i++)
+		arr[i] = false;
+	for(int i = 0;i < SIZE / 2;i++)
+	{
+		int pos = 1;
+		while(pos < SIZE / 2)
+		{
+			arr[pos] = !arr[pos];
+			pos = pos * 2 + !arr[pos];
+		}
+		printf("%d\n",pos);
+	}
 
 	return 0;
 }
