@@ -5,13 +5,21 @@
 using namespace std;
 
 typedef pair<int,int> ii;
+const double PI = 22.0 / 7;
+const double HPI = PI / 2;
 int direction(ii a,ii b,ii c)
-{return (b.X - a.X)*(c.Y - a.Y) - (b.Y - a.Y)*(c.X - a.X);}
+{
+	return (b.X - a.X)*(c.Y - a.Y) - (b.Y - a.Y)*(c.X - a.X);
+}
+bool is_equal(double a,double b)
+{
+	return fabs(a - b) < 1E-6;
+}
 
 int main()
 {
-	freopen("in.txt","r",stdin);
-	freopen("out.txt","w",stdout);
+//	freopen("in.txt","r",stdin);
+//	freopen("out.txt","w",stdout);
 	int TC,n,x,y,idx;
 	bool last_dir;
 	vector<ii> arr,convex;
@@ -36,20 +44,23 @@ int main()
 		swap(arr[0],arr[idx]);
 		ii tp = arr[0];
 		sort(arr.begin() + 1,arr.end(),[&tp](const ii &a,const ii &b) -> bool {
-			return atan((double)(a.Y - tp.Y) / (a.X - tp.X)) < atan((double)(b.Y - tp.Y) / (b.X - tp.X));
+			double angle_a = atan2(a.Y - tp.Y,a.X - tp.X);
+			double angle_b = atan2(b.Y - tp.Y,b.X - tp.X);
+			if(is_equal(angle_a,angle_b))
+                return pow(a.Y - tp.Y,2) + pow(a.X - tp.X,2) > pow(b.Y - tp.Y,2) + pow(b.X - tp.X,2);
+			return angle_a < angle_b;
 		});
 		convex.clear();
-		for(int i = 0;i <= arr.size();i++)
+		arr.push_back(arr[0]);
+		convex.push_back(arr[0]);
+		convex.push_back(arr[1]);
+		for(int i = 2;i < arr.size();i++)
 		{
-//			ii p = arr[(idx + i) % arr.size()];
-			ii p = arr[i % arr.size()];
-//			printf("------\n");
-//			for(int i = 0;i < convex.size();i++)
-//			{
-//				printf("%d %d\n",convex[i].X,convex[i].Y);
-//			}
-//			printf("------\n");
-			while(convex.size() > 2 && direction(convex[convex.size() - 2],convex[convex.size() - 1],p) <= 0)
+			ii p = arr[i];
+			ii p_ = arr[i - 1];
+			if(is_equal(atan2(p.Y - tp.Y,p.X - tp.X),atan2(p_.Y - tp.Y,p_.X - tp.X)))
+				continue;
+			while(convex.size() >= 2 && direction(convex[convex.size() - 2],convex[convex.size() - 1],p) <= 0)
 				convex.pop_back();
 			convex.push_back(p);
 		}

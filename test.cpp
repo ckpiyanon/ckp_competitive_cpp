@@ -1,9 +1,9 @@
 #include <bits/stdc++.h>
-#define SIZE 8
+
 using namespace std;
 int main()
 {
-    printf("%lf\n",0.0 / 1);
+	cout << (-1 % 5) << endl;
 
 	return 0;
 }
