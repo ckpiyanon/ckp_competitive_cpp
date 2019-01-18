@@ -1,43 +1,38 @@
 #include <bits/stdc++.h>
+
 using namespace std;
-int deg[101],n,m;
-bitset<101> visited;
-vector<vector<int> > graph(101);
-bool first;
-void dfs(int u)
-{
-	if(visited[u])	return;
-	visited[u] = true;
-	if(!first) printf(" ");
-	first = false;
-	printf("%d",u);
-	for(vector<int>::iterator i = graph[u].begin();i < graph[u].end();i++)
-	{
-		deg[*i]--;
-		if(deg[*i] == 0) dfs(*i);
-	}
-}
+
 int main()
 {
-	freopen("in.txt","r",stdin);
-	int u,v;
-	while(~scanf("%d %d",&n,&m) && n && m)
+//	freopen("in.txt","r",stdin);
+//	freopen("out.txt","w",stdout);
+	vector<vector<int> > graph;
+	vector<int> deg;
+	queue<int> q;
+	int n,m,u,v;
+	while(scanf("%d %d",&n,&m),n != 0 || m != 0)
 	{
-		graph.assign(graph.size(),vector<int>());
-		memset(deg,0,sizeof(deg));
-		first = true;
-		visited.reset();
+		graph.assign(n,vector<int>());
+		deg.assign(n,0);
 		while(m--)
 		{
 			scanf("%d %d",&u,&v);
-			graph[u].push_back(v);
-			deg[v]++;
+			graph[u-1].push_back(v-1);
+			deg[v-1]++;
 		}
-		for(int i = 1;i <= n;i++) if(deg[i] == 0)
+		q = queue<int>();
+		for(int i = 0;i < n;i++) if(!deg[i])
+			q.push(i);
+		while(!q.empty())
 		{
-			deg[i]--;
-			dfs(i);
+			u = q.front();
+			q.pop();
+			for(vector<int>::iterator it = graph[u].begin();it < graph[u].end();it++)
+				if(--deg[*it] == 0)
+					q.push(*it);
+			printf("%d%c",u + 1,q.empty() ? '\n':' ');
 		}
 	}
+
 	return 0;
 }
