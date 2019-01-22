@@ -3,34 +3,25 @@
 using namespace std;
 
 vector<vector<int> > graph(5001);
-bitset<5001> visited;
 int weight[5001];
 
-int bfs(int u)
+void dfs(int u,int w)
 {
-	int weight = 0,w;
-	pair<int,int> p;
-	queue<pair<int,int> > q;
-	q.push(make_pair(u,0));
-	visited.reset();
-	while(!q.empty())
-	{
-		p = q.front();	q.pop();
-		if(visited[p.first])	continue;
-		u = p.first;	w = p.second;
-		visited[u] = true;
-		weight = max(weight,w);
-		for(vector<int>::iterator it = graph[u].begin();it < graph[u].end();it++)
-			if(!visited[*it])	q.push(make_pair(*it,w+1));
-	}
-	return weight;
+	weight[u] = w;
+	for(vector<int>::iterator it = graph[u].begin();it < graph[u].end();it++)
+		if(weight[*it] == -1)
+			dfs(*it,w + 1);
 }
 
 int main()
 {
-	int n,m,x,mn,mx;
+//	freopen("in.txt","r",stdin);
+//	freopen("out.txt","w",stdout);
+	set<int> best1,best2,worst;
+	int n,m,x,mn1,mn2,mx;
 	while(~scanf("%d",&n))
 	{
+		graph.assign(n,vector<int>());
 		for(int i = 0;i < n;i++)
 		{
 			scanf("%d",&m);
@@ -40,17 +31,48 @@ int main()
 				graph[i].push_back(x-1);
 			}
 		}
+		best1.clear();
+		best2.clear();
+		worst.clear();
+
+		memset(weight,-1,sizeof(weight));
+		dfs(0,0);
+		x = 0;
+		for(int i = 1;i < n;i++)
+			if(weight[x] < weight[i])
+				x = i;
+
+		memset(weight,-1,sizeof(weight));
+		dfs(x,0);
+		x = 0;
+		for(int i = 0;i < n;i++)
+			if(weight[x] < weight[i])
+				x = i;
+		mx = weight[x];
+		mn1 = mn2 = mx / 2;
+		if(mx & 1)	mn2++;
 		for(int i = 0;i < n;i++)
 		{
-			weight[i] = bfs(i);
-			if(!i)	mx = mn = weight[i];
-			else	mx = max(mx,weight[i]),mn = min(mn,weight[i]);
+			if(weight[i] == mx)	worst.insert(i);
+			if(weight[i] == mn1 || weight[i] == mn2)	best1.insert(i);
 		}
+
+		memset(weight,-1,sizeof(weight));
+		dfs(x,0);
+		for(int i = 0;i < n;i++)
+		{
+			if(weight[i] == mx)	worst.insert(i);
+			if(weight[i] == mn1 || weight[i] == mn2)	best2.insert(i);
+		}
+
 		printf("Best Roots  :");
-		for(int i = 0;i < n;i++)	if(weight[i] == mn)	printf(" %d",i+1);
+		for(set<int>::iterator it = best1.begin();it != best1.end();it++)
+			if(best2.find(*it) != best2.end())	printf(" %d",*it + 1);
 		printf("\n");
+
 		printf("Worst Roots :");
-		for(int i = 0;i < n;i++)	if(weight[i] == mx)	printf(" %d",i+1);
+		for(set<int>::iterator it = worst.begin();it != worst.end();it++)
+			printf(" %d",*it + 1);
 		printf("\n");
 	}
 
