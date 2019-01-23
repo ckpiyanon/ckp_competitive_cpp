@@ -3,22 +3,41 @@
 using namespace std;
 
 vector<vector<int> > graph(5001);
-int weight[5001];
+vector<int> path;
+set<int> best,worst;
+int weight[5001],max_len,node_end;
 
-void dfs(int u,int w)
+void dfs(int uu,int u,int w,bool find_node)
 {
-	weight[u] = w;
+	weight[u] = path.size();
+	path.push_back(u);
+	if(weight[u] > max_len)
+	{
+		node_end = u;
+		max_len = weight[u];
+		if(find_node)
+		{
+			best.clear();
+			worst.clear();
+		}
+	}
+	if(find_node && weight[u] == max_len)
+	{
+		worst.insert(uu);
+		worst.insert(u);
+		best.insert(path[max_len / 2]);
+		if(max_len & 1)	best.insert(path[(max_len / 2) + 1]);
+	}
 	for(vector<int>::iterator it = graph[u].begin();it < graph[u].end();it++)
-		if(weight[*it] == -1)
-			dfs(*it,w + 1);
+		if(weight[*it] == -1)	dfs(uu,*it,w + 1,find_node);
+	path.pop_back();
 }
 
 int main()
 {
 //	freopen("in.txt","r",stdin);
 //	freopen("out.txt","w",stdout);
-	set<int> best1,best2,worst;
-	int n,m,x,mn1,mn2,mx;
+	int n,m,x;
 	while(~scanf("%d",&n))
 	{
 		graph.assign(n,vector<int>());
@@ -31,43 +50,22 @@ int main()
 				graph[i].push_back(x-1);
 			}
 		}
-		best1.clear();
-		best2.clear();
-		worst.clear();
+		best.clear(); worst.clear(); path.clear();
+		max_len = -1;
+		memset(weight,-1,sizeof(weight));
+		dfs(0,0,0,false);
+
+		best.clear(); worst.clear(); path.clear();
+		max_len = -1;
+		memset(weight,-1,sizeof(weight));
+		dfs(node_end,node_end,0,true);
 
 		memset(weight,-1,sizeof(weight));
-		dfs(0,0);
-		x = 0;
-		for(int i = 1;i < n;i++)
-			if(weight[x] < weight[i])
-				x = i;
-
-		memset(weight,-1,sizeof(weight));
-		dfs(x,0);
-		x = 0;
-		for(int i = 0;i < n;i++)
-			if(weight[x] < weight[i])
-				x = i;
-		mx = weight[x];
-		mn1 = mn2 = mx / 2;
-		if(mx & 1)	mn2++;
-		for(int i = 0;i < n;i++)
-		{
-			if(weight[i] == mx)	worst.insert(i);
-			if(weight[i] == mn1 || weight[i] == mn2)	best1.insert(i);
-		}
-
-		memset(weight,-1,sizeof(weight));
-		dfs(x,0);
-		for(int i = 0;i < n;i++)
-		{
-			if(weight[i] == mx)	worst.insert(i);
-			if(weight[i] == mn1 || weight[i] == mn2)	best2.insert(i);
-		}
+		dfs(node_end,node_end,0,true);
 
 		printf("Best Roots  :");
-		for(set<int>::iterator it = best1.begin();it != best1.end();it++)
-			if(best2.find(*it) != best2.end())	printf(" %d",*it + 1);
+		for(set<int>::iterator it = best.begin();it != best.end();it++)
+			printf(" %d",*it + 1);
 		printf("\n");
 
 		printf("Worst Roots :");
